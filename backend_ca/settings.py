@@ -51,6 +51,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 AUTH_USER_MODEL="accounts.User"
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'accounts.tokenauthentication.JWTauthentication',
+    ],}
 ROOT_URLCONF = 'backend_ca.urls'
 
 TEMPLATES = [
