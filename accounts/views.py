@@ -6,6 +6,7 @@ from accounts.tokenauthentication import JWTauthentication
 # Create your views here.
 @api_view(["POST"])
 def register_user(request):
+    print(request.data)
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
