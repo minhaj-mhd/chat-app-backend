@@ -58,7 +58,8 @@ AUTH_USER_MODEL="accounts.User"
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'accounts.tokenauthentication.JWTauthentication',
-    ],}
+    ],
+    }
 ROOT_URLCONF = 'backend_ca.urls'
 
 CORS_ALLOWED_ORIGINS = [
@@ -82,11 +83,11 @@ TEMPLATES = [
     },
 ]
 
-ASGI_APPLICATION = 'backend_ca.wsgi.application'
+ASGI_APPLICATION = 'backend_ca.asgi.application'
 
-CHANNEL_LAYER={
+CHANNEL_LAYERS={
     "default":{
-        "BACKEND":"channels_redis.core.RedisChannerLayer",
+        "BACKEND":"channels_redis.core.RedisChannelLayer",
         "CONFIG":{"hosts":[("127.0.0.1",6380)]}
     }
 }
