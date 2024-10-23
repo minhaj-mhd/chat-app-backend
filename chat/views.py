@@ -26,8 +26,8 @@ def verifyUser(request):
     try:
         user_obj = User.objects.get(id=request.user.id)
         serializer = serializers.GetUsersSerializer(user_obj)
-        print(serializer.data)
         return Response(serializer.data,status=200)
     except Exception as e:
         print ("error")
         return Response("Error getting user data.",status=400)
+    
