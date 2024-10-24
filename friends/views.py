@@ -17,12 +17,11 @@ User = get_user_model()
 @permission_classes([IsAuthenticated])
 def addFriend(request):
     print(request.data)
-    friends=Friendship.objects.filter(user=request.user)
-    added = request.user.added
-    recieved = request.user.recieved
-    print("friends",friends)
-    print("added",added)
-    print("recieved",recieved)
+    print(request.user)
+    friends=Friendship.objects.filter(friend=request.data.get("friend"),user=request.user)
+    if friends:
+        return Response(status.HTTP_208_ALREADY_REPORTED)
+    
     try:
         serializer = serializers.FriendshipSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
@@ -91,6 +90,7 @@ def getFriends(request):
         friends_data = added_data+recieved_data
         print(friends_data)
         serializer = serializers.GetUsersSerializer(friends_data,many=True)
+        print(serializer.data)
         return Response(tuple(serializer.data),status=200)
     except Exception as e:
         print ("error")

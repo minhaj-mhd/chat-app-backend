@@ -60,6 +60,13 @@ class AcceptFriendSerializer(serializers.ModelSerializer):
         # Get the authenticated user from the request context
         user = self.context['request'].user
         friend = data.get('friend')
+         # Ensure the friendship request is in 'pending' state before confirmation
+        if self.instance and self.instance.status != 'pending':
+            raise serializers.ValidationError("Cannot update a friend request that is not pending.")
+        
+
+
+        return data
     def update(self, instance, validated_data):
         # Update the friendship status (e.g., accepting or declining the request)
         instance.status = validated_data.get('status', instance.status)
