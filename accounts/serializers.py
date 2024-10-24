@@ -29,13 +29,14 @@ class LoginSerializer(serializers.ModelSerializer):
         if password == None:
             raise serializers.ValidationError("A password id required for Login")
         user = authenticate(username=email,password=password)
-
         if user is None:
             raise serializers.ValidationError("Invalid username or password")
         if not user.is_active:
             raise serializers.ValidationError("User is not active")
+        fullName=user.get_full_name()
         return {
             "email":user.email,
+            "name":fullName,
             "id":user.id
         }
     class Meta:

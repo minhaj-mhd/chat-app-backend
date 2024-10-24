@@ -3,10 +3,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from accounts.tokenauthentication import JWTauthentication
+from django.contrib.auth import get_user_model
+from .models import User
 # Create your views here.
 @api_view(["POST"])
 def register_user(request):
-    print(request.data)
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -17,12 +18,15 @@ def register_user(request):
 @api_view(["POST"])
 def login_user(request):
     serializer = LoginSerializer(data=request.data)
+   
     if serializer.is_valid():
-        print("serializer_data",serializer.data)
+        user = User.objects.get(id=serializer.data["id"])
         token = JWTauthentication.generate_token(payload=serializer.data)
         return Response({
             "message": "Login Successful",
             "token":token,
-            "user":serializer.data
+            "user":serializer.data,
+            "name":user.get_full_name()
+            
         })
     return Response(serializer.errors,status=status.HTTP_404_NOT_FOUND)
