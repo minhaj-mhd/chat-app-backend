@@ -2,6 +2,7 @@ from .models import Friendship
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
+User = get_user_model()  # Correct usage of get_user_model() to define the user model
 class FriendshipSerializer(serializers.ModelSerializer):
     User = get_user_model()  # Correct usage of get_user_model() to define the user model
     user = serializers.StringRelatedField(read_only=True)  # Authenticated user is read-only
@@ -25,7 +26,7 @@ class FriendshipSerializer(serializers.ModelSerializer):
         except:
                 print("friend request already exists")
 
-                    # Ensure users cannot be friends with themselves
+                # Ensure users cannot be friends with themselves
         if user == friend:
             raise serializers.ValidationError("You cannot send a friend request to yourself.")
         
@@ -82,3 +83,44 @@ class GetUsersSerializer(serializers.ModelSerializer):
         fields=['email','first_name','last_name','id']
         extra_kwargs = {'id':{'read_only':True}}
 
+class GetUsersWithStatusSerializer(serializers.Serializer):
+
+    email=serializers.CharField()
+    first_name=serializers.CharField()
+    last_name = serializers.CharField()
+    id = serializers.CharField()
+    friendship_status= serializers.CharField()
+    def to_representation(self, instance):
+        email=instance.email
+        first_name=instance.first_name
+        last_name = instance.last_name
+        id = instance.id
+        print("friend:",id)
+
+        user = self.context['request'].user
+        print("friend:",user)
+
+        try:
+            friend = User.objects.get(id=id)
+            # Check if a friendship exists in either direction
+            friendship = (
+                Friendship.objects.filter(user=user, friend=friend).first() or
+                Friendship.objects.filter(user=friend, friend=user).first()
+            )
+
+            # If friendship exists, retrieve the status
+            if friendship:
+                friendship_status = friendship.status
+            else:
+                friendship_status="None"
+
+        except User.DoesNotExist:
+            pass  # Target user does not exist, keep status as "None"
+
+        return{
+            "email":email,
+            "first_name":first_name,
+            "last_name":last_name,
+            "id":id,
+            "friendship_status":friendship_status
+        }
