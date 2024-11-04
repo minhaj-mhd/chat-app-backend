@@ -105,3 +105,20 @@ def getFriendshipRequestsWithStatus(request):
     except Exception as e:
         print ("error")
         return Response("Error getting user list.",status=400)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def cancel_friend_request(request):
+    try:
+
+        friend_id = request.data.get("friend")
+        friend = User.objects.get(id=friend_id)
+        print("friend:",friend)
+        friendship = Friendship.objects.get(user=request.user,friend=friend)
+
+        if friendship:
+            friendship.delete()
+            return Response(status=status.HTTP_202_ACCEPTED)
+
+    except Friendship.DoesNotExist:
+        return Response({'error': 'Friend request not found'}, status=status.HTTP_404_NOT_FOUND)
+    
