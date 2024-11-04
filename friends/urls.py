@@ -8,5 +8,5 @@ urlpatterns = [
     path('add/',views.addFriend,name="add"),
     path('friendrequests/',views.getFriendshipRequests,name="friendrequests"),
     path('acceptrequest/',views.confirm_friend_request,name='acceptrequest'),
-   
+    path('cancelrequest/',views.cancel_friend_request,name="cancelrequest")
 ]

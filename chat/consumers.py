@@ -1,13 +1,16 @@
+import datetime
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.core.cache import cache
 from channels.db import database_sync_to_async
+from .models import Message
+from datetime import datetime
 class PersonalClassConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        request_user = self.scope["user"]
-        if request_user.is_authenticated:
-            chat_with_user = self.scope["url_route"]['kwargs']['id']
-            user_ids = [int(request_user.id),int(chat_with_user)]
+        self.request_user = self.scope["user"]
+        if self.request_user.is_authenticated:
+            self.chat_with_user = self.scope["url_route"]['kwargs']['id']
+            user_ids = [int(self.request_user.id),int(self.chat_with_user)]
             user_ids = sorted(user_ids)
             self.room_group_name = f"chat_{user_ids[0]}-{user_ids[1]}"
             await self.channel_layer.group_add(
@@ -22,14 +25,14 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         print("data",data)
         message = data["message"]
-        receiver = data["receiver"]
-        await self.store_message_in_cache(message,receiver)
+        reciever = data["reciever"]
+        await self.save_message(message,reciever,self.request_user.id)
 
         await self.channel_layer.group_send(
             self.room_group_name,{
                 'type':"chat_message",
                 "message":message,
-                "receiver":receiver
+                "reciever":reciever
             }
         )
     async def disconnect(self,code):
@@ -39,22 +42,39 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
         ) 
     async def chat_message(self,event):
         message = event["message"]
-        receiver = event["receiver"]
-        await self.send(text_data=json.dumps({"message":message,"receiver":receiver}))
+        reciever = event["reciever"]
+        await self.send(text_data=json.dumps({"message":message,"reciever":reciever}))
 
     @database_sync_to_async
-    def store_message_in_cache(self, message,receiver):
-        message_entry={"message":message,"receiver":receiver}       
+    def save_message(self, message,reciever,sender):
+        timestamp = datetime.utcnow().isoformat()  # Creating the timestamp here
+
+        message_entry={"message":message,"reciever":reciever,"sender":sender,"timestamp": timestamp}  
+        #save message to db
+        message = Message.objects.create(sender=sender,reciever=reciever,content=message,timestamp=datetime.now)
+
         chat_history = cache.get(self.room_group_name, [])
         print("chat_history",chat_history)
-        print(message,receiver)
+        print(message,reciever)
         chat_history.append(message_entry)
         # Store it back to the cache
-        cache.set(self.room_group_name, chat_history, timeout=3600)  # Expires after 1 hour
+        cache.set(self.room_group_name, chat_history[-100:], timeout=3600)  # Expires after 1 hour
     
     async def send_cached_messages(self):
-        print("sending cached messages")
-        cached_messages = cache.get(self.room_group_name, [])
-        print("sending cached messages",cached_messages)
+        cached_messages = cache.get(self.room_group_name)
+        if not cached_messages:
+            cached_messages = await self.get_last_messages_from_db()
+            cache.set(self.room_group_name,cached_messages,timeout=3600)
         for msg in cached_messages:
-            await self.send(text_data=json.dumps({"message": msg["message"],"receiver":msg["receiver"]}))
+            await self.send(text_data=json.dumps({"message": msg["message"],"reciever":msg["reciever"]}))
+
+    @database_sync_to_async
+    def get_last_messages_from_db(self):
+        messages = Message.objects.filter(
+            sender__in=[self.request_user.id,int(self.chat_with_user)],
+            reciever__in = [self.request_user.id,int(self.chat_with_user)]
+        ).order_by("-timestamp")[:100]
+        return [{"sender":message.sender,
+                 "reciever":message.reciever,
+                 "message":message.content,
+                 "timestamp":message.timestamp} for message in messages]
