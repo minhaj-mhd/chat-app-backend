@@ -3,13 +3,21 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.core.cache import cache
 from channels.db import database_sync_to_async
-from .models import Message
+from .models import Message,OnlineStatusTrack
+from accounts.models import User
 from datetime import datetime
+from django.db.models import Q
 class PersonalClassConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.request_user = self.scope["user"]
         if self.request_user.is_authenticated:
-            self.chat_with_user = self.scope["url_route"]['kwargs']['id']
+            self.chat_with_user = int(self.scope["url_route"]['kwargs']['id'])
+            print("chat with user",self.chat_with_user)
+            # try:
+            self.chat_user = User.objects.get(id=self.chat_with_user)
+            print(self.chat_user)
+            # except:
+            #     print("error")
             user_ids = [int(self.request_user.id),int(self.chat_with_user)]
             user_ids = sorted(user_ids)
             self.room_group_name = f"chat_{user_ids[0]}-{user_ids[1]}"
@@ -23,7 +31,6 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data=None, bytes_data=None):
         data = json.loads(text_data)
-        print("data",data)
         message = data["message"]
         reciever = data["reciever"]
         await self.save_message(message,reciever,self.request_user.id)
@@ -39,7 +46,21 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
-        ) 
+        )
+        await self.checkout()
+
+    @database_sync_to_async   
+    def checkout(self):
+        obj = OnlineStatusTrack.objects.filter(
+            Q(userOne=self.request_user, userTwo = self.chat_User) | Q(userOne=self.chat_user,userTwo =self.request_user)).first()
+        print(obj)
+        if not obj:
+            obj = OnlineStatusTrack(
+                userOne=self.request_user,
+                userTwo=self.chat_user)
+            obj.save()
+        
+        
     async def chat_message(self,event):
         message = event["message"]
         reciever = event["reciever"]
@@ -54,8 +75,7 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
         message = Message.objects.create(sender=sender,reciever=reciever,content=message,timestamp=datetime.now)
 
         chat_history = cache.get(self.room_group_name, [])
-        print("chat_history",chat_history)
-        print(message,reciever)
+
         chat_history.append(message_entry)
         # Store it back to the cache
         cache.set(self.room_group_name, chat_history[-100:], timeout=3600)  # Expires after 1 hour
