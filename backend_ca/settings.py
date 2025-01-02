@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'accounts',
     'chat',
-    'friends'
+    'friends',
+    "debug_toolbar",
+    'schema_graph',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 AUTH_USER_MODEL="accounts.User"
 REST_FRAMEWORK = {
@@ -63,10 +66,12 @@ REST_FRAMEWORK = {
     }
 ROOT_URLCONF = 'backend_ca.urls'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React development server
-    # Add any other allowed domains here
-]
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3000",  # React development server
+#     "http://localhost:3001",
+#     # Add any other allowed domains here
+# ]
+CORS_ALLOW_ALL_ORIGINS = True  # For development only
 
 TEMPLATES = [
     {
@@ -134,7 +139,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+INTERNAL_IPS = [
+    "127.0.0.1",  # Localhost
+]
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -156,3 +163,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DEBUG_TOOLBAR_PANELS = [
+    "debug_toolbar.panels.versions.VersionsPanel",
+    "debug_toolbar.panels.timer.TimerPanel",
+    "debug_toolbar.panels.settings.SettingsPanel",
+    "debug_toolbar.panels.headers.HeadersPanel",
+    "debug_toolbar.panels.request.RequestPanel",
+    "debug_toolbar.panels.sql.SQLPanel",
+    "debug_toolbar.panels.staticfiles.StaticFilesPanel",
+    "debug_toolbar.panels.templates.TemplatesPanel",
+    "debug_toolbar.panels.cache.CachePanel",
+    "debug_toolbar.panels.signals.SignalsPanel",
+    "debug_toolbar.panels.logging.LoggingPanel",
+    "debug_toolbar.panels.profiling.ProfilingPanel",
+]

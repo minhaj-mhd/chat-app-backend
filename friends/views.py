@@ -16,10 +16,6 @@ User = get_user_model()
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def addFriend(request):
-    print(request.data)
-    print(request.user)
-    friend_id = request.data.get("friend")
-    print("friendId",friend_id)
     friend = User.objects.get(id=request.data.get("friend"))
     if Friendship.objects.filter(user=request.user, friend=friend).exists() or \
             Friendship.objects.filter(user=friend, friend=request.user).exists():
@@ -40,7 +36,6 @@ def getUser(request):
         query = request.GET.get("q")
         searched_users = User.objects.filter(email__icontains=query).exclude(id=request.user.id)
         serializer = serializers.GetUsersWithStatusSerializer(searched_users,many=True, context={'request': request})
-        print(serializer.data)
         return Response(tuple(serializer.data),status=200)
     except Exception as e:
         print ("error")
@@ -54,7 +49,6 @@ def confirm_friend_request(request):
 
         friend_id = request.data.get("friend")
         friend = User.objects.get(id=friend_id)
-        print("friend::",friend)
         friendship = Friendship.objects.get(user=friend,friend=request.user)
     except Friendship.DoesNotExist:
         return Response({'error': 'Friend request not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -87,7 +81,6 @@ def getFriends(request):
         friends_data = added_data+recieved_data
         print(friends_data)
         serializer = serializers.GetUsersWithStatusSerializer(friends_data,many=True,context={'request': request})
-        print(serializer.data)
         return Response(tuple(serializer.data),status=200)
     except Exception as e:
         print ("error")
@@ -112,7 +105,6 @@ def cancel_friend_request(request):
 
         friend_id = request.data.get("friend")
         friend = User.objects.get(id=friend_id)
-        print("friend:",friend)
         friendship = Friendship.objects.get(user=request.user,friend=friend)
 
         if friendship:
