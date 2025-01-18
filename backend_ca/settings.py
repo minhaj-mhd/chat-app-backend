@@ -11,16 +11,17 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-
+from dotenv import load_dotenv
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+load_dotenv()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-vc6yyh&n182d82c^%a&i614(=xxxef5)di!hgkrorb#4r6gf1!'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -94,7 +95,7 @@ ASGI_APPLICATION = 'backend_ca.asgi.application'
 CHANNEL_LAYERS={
     "default":{
         "BACKEND":"channels_redis.core.RedisChannelLayer",
-        "CONFIG":{"hosts":[("127.0.0.1",6380)]}
+        "CONFIG":{"hosts":[("127.0.0.1",6379)]}
     }
 }
 # Database
@@ -104,8 +105,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME':  'chatapp',
-        'USER': 'mj',
-        'PASSWORD': "mjpass",
+        'USER': os.getenv("DATABASE_USER"),
+        'PASSWORD': os.getenv("DATABASE_PASSWORD"),
         'HOST':"localhost",
         'PORT':'5432'
     }
@@ -114,7 +115,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6380/1',  # Adjust this if needed
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # Adjust this if needed
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }

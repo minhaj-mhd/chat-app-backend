@@ -10,15 +10,16 @@ from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
+#chat_user_obj is User model obj
+#chat_with_user is the userid of the 2nd user
+
 class PersonalClassConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         print("connencting")
         self.request_user = self.scope["user"]
         print("user",self.request_user)
         if self.request_user.is_authenticated:
-            print("authenticated user")
             self.chat_with_user = self.scope["url_route"]['kwargs']['id']
-            print("chat with user", self.chat_with_user)
             user_ids = sorted([self.request_user.id, self.chat_with_user])
             self.room_group_name = f"chat_{user_ids[0]}-{user_ids[1]}"
             await self.channel_layer.group_add(
@@ -51,15 +52,16 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def checkout(self):
+        self.chat_user_obj = User.objects.get(id=self.chat_with_user)
+
         obj = OnlineStatusTrack.objects.filter(
-            Q(userOne=self.request_user, userTwo=self.chat_user) | 
-            Q(userOne=self.chat_user, userTwo=self.request_user)
+            Q(userOne=self.request_user, userTwo=self.chat_user_obj) | 
+            Q(userOne=self.chat_user_obj, userTwo=self.request_user)
         ).first()
-        print(obj)
         if not obj:
             OnlineStatusTrack.objects.create(
                 userOne=self.request_user,
-                userTwo=self.chat_user
+                userTwo=self.chat_user_obj
             )
 
     async def chat_message(self, event):
@@ -100,11 +102,11 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def get_last_messages_from_db(self):
-        self.chat_user = User.objects.get(id=self.chat_with_user)
-        print(self.chat_user)
+        self.chat_user_obj = User.objects.get(id=self.chat_with_user)
+
         messages = Message.objects.filter(
-            sender__in=[self.request_user.id, self.chat_user.id],
-            reciever__in=[self.request_user.id, self.chat_user.id]
+            sender__in=[self.request_user.id, self.chat_user_obj.id],
+            reciever__in=[self.request_user.id, self.chat_user_obj.id]
         ).order_by("-timestamp")[:100]
         return [{
             "sender": message.sender,
