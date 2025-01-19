@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['chat-app-backend-gmjh.onrender.com']
+ALLOWED_HOSTS = ['chat-app-backend-gmjh.onrender.com',]
 
 
 # Application definition
