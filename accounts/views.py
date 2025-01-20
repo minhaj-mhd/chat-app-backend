@@ -34,4 +34,4 @@ def login_user(request):
 
 @api_view(["GET"])
 def check_health(request):
-    return JsonResponse({"status":"ok"})
+    return JsonResponse({"status":"ok"}, status=200)
