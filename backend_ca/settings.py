@@ -95,7 +95,7 @@ ASGI_APPLICATION = 'backend_ca.asgi.application'
 CHANNEL_LAYERS={
     "default":{
         "BACKEND":"channels_redis.core.RedisChannelLayer",
-        "CONFIG":{"hosts":[("127.0.0.1",6379)]}
+        "CONFIG":{"hosts": ["redis://red-cu6c8mogph6c73c59n10:6379"]}
     }
 }
 # Database
@@ -115,7 +115,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',  # Adjust this if needed
+        'LOCATION': 'redis://red-cu6c8mogph6c73c59n10:6379/1',  # Adjust this if needed
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
