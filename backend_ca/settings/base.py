@@ -65,6 +65,9 @@ TEMPLATES = [
     },
 ]
 
+
+
+
 ROOT_URLCONF = 'backend_ca.urls'
 # WSGI_APPLICATION = 'myproject.wsgi.application'
 
@@ -79,3 +82,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Static Files
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
+
+# settings.py
+
+# Email Backend
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Email SMTP settings for Gmail (or any other service)
+EMAIL_HOST = 'smtp-relay.brevo.com'  # Gmail SMTP server
+EMAIL_PORT = 587  # Port for TLS
+EMAIL_USE_TLS = True  # Use TLS encryption
+EMAIL_HOST_USER = '8452bd001@smtp-brevo.com'  # Your Gmail address
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_PASSWORD")  # Your Gmail password (or app-specific password)
+DEFAULT_FROM_EMAIL = '8452bd001@smtp-brevo.com'  # Default "From" email address
+
+# Optional: Set the email for error reports
+ADMINS = [('Admin', 'minhajmuhamad@gmail.com')]  # List of admin emails to receive error reports

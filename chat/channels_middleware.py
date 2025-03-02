@@ -16,12 +16,12 @@ class JWTWebsocketMiddleware(BaseMiddleware):
         if token is None:
             # No token provided, close the WebSocket connection
             await send({
-                "type": "websocket.close",  # Fixed typo
+                "type": "websocket.close",  
                 "code": 4000
             })
-            return  # Stop further execution
+            return  
 
-        authentication = JWTauthentication()  # Assuming you have this class
+        authentication = JWTauthentication()  
 
         try:
             # Authenticate the user using JWT token
