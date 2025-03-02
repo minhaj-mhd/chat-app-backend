@@ -41,28 +41,3 @@ def login_user(request):
 @api_view(["GET"])
 def check_health(request):
     return JsonResponse({"status":"ok"})
-
-
-def sendOtp(email):
-    otp = str(random.randint(100000, 999999))
-    Subject = "Verify Your Chat-App Account"
-    message = f'Your One-Time Password is :{otp}' 
-    from_email = settings.DEFAULT_FROM_EMAIL
-    recipient_list =[email]
-    print(recipient_list)
-    try:
-        send_mail(Subject,message,from_email,recipient_list)
-        store_otp(email,otp)
-    except Exception as e:
-        print(f"Error sending OTP: {str(e)}")
-
-def store_otp(email,otp):
-    cache.set(f"otp:{email}", otp, timeout=300)
-
-def verify_otp(email,check_otp):
-    otp=cache.get(f"otp:{email}")
-    if otp ==   check_otp:
-        return Response(status=201)
-
-
-
