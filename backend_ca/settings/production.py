@@ -7,6 +7,18 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 # CORS Configuration (Update to match your frontend URL)
 CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'OPTIONS',
+    'PUT',
+    'DELETE',
+]
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'authorization',
+]
+CORS_PREFLIGHT_MAX_AGE = 86400
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
