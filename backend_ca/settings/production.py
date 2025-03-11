@@ -18,6 +18,8 @@ CORS_ALLOW_HEADERS = [
     'content-type',
     'authorization',
 ]
+CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_PREFLIGHT_MAX_AGE = 86400
 DATABASES = {
     'default': {
