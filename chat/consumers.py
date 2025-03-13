@@ -71,7 +71,7 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message(self, message, reciever, sender):
-        timestamp = datetime.utcnow().isoformat()  # Creating the timestamp here
+        timestamp = datetime.now()  # Creating the timestamp here
         message_entry = {
             "message": message,
             "reciever": reciever,
@@ -86,15 +86,16 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
             timestamp=datetime.now()
         )
         chat_history = cache.get(self.room_group_name, [])
-        chat_history.append(message_entry)
+        chat_history.insert(0, message_entry)
         cache.set(self.room_group_name, chat_history[-100:], timeout=3600)  # Cache expires after 1 hour
 
     async def send_cached_messages(self):
         cached_messages = cache.get(self.room_group_name)
+        print("cached",cached_messages)
         if not cached_messages:
             cached_messages = await self.get_last_messages_from_db()
             cache.set(self.room_group_name, cached_messages, timeout=3600)
-        for msg in cached_messages:
+        for msg in reversed(cached_messages):
             await self.send(text_data=json.dumps({
                 "message": msg["message"],
                 "reciever": msg["reciever"]
@@ -103,7 +104,6 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_last_messages_from_db(self):
         self.chat_user_obj = User.objects.get(id=self.chat_with_user)
-
         messages = Message.objects.filter(
             sender__in=[self.request_user.id, self.chat_user_obj.id],
             reciever__in=[self.request_user.id, self.chat_user_obj.id]
@@ -112,5 +112,5 @@ class PersonalClassConsumer(AsyncWebsocketConsumer):
             "sender": message.sender,
             "reciever": message.reciever,
             "message": message.content,
-            "timestamp": message.timestamp.isoformat()
+            "timestamp": message.timestamp
         } for message in messages]
